@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.0.2)
 project(meisekisisui)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -pthread)
+add_compile_options(-L/usr/lo)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,7 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenCV REQUIRED)
+find_package(realsense2)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -52,6 +54,7 @@ add_message_files(
   FILES
   ScrpSlave.msg
   moveData.msg
+  realsenseInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -118,7 +121,10 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
+  ${OpenCV_INCLUDE_DIRS}
+  ${realsense2_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -136,6 +142,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 ## add_executable(${PROJECT_NAME}_node src/2021_meisekisisui_node.cpp)
  add_executable(main_com src/main.cpp)
+ add_executable(supershooter src/supershooter.cpp)
+ add_executable(realsense_info src/capture.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -145,12 +153,26 @@ include_directories(
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(main_com    ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(main_com       ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(supershooter   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(realsense_info ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(main_com
    ${catkin_LIBRARIES}
  )
+
+ target_link_libraries(supershooter
+   ${catkin_LIBRARIES}
+ )
+
+ target_link_libraries(realsense_info
+   ${catkin_LIBRARIES}   
+   ${OpenCV_LIBRARIES}   
+   ${realsense2_LIBRARY}   
+   ${CMAKE_THREAD_LIBS_INIT}
+ )
+
 #############
 ## Install ##
 #############

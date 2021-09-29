@@ -1,11 +1,15 @@
 <launch>
 
-  <node name="main_com"    pkg="meisekisisui"     type="main_com"  output="screen"  />
+  <node name="main_com"       pkg="meisekisisui"     type="main_com"       output="screen"  />
 
-  <node name="important"   pkg="rosserial_server" type="socket_node"                />
+  <node name="supershooter"   pkg="meisekisisui"     type="supershooter"                    />
 
-  <node name="python"      pkg="rosserial_python" type="message_info_service.py"    />
+  <node name="realsense_info" pkg="meisekisisui"     type="realsense_info" output="screen"  />
 
+  <node name="important"      pkg="rosserial_server" type="socket_node"                     />
+
+  <node name="python"         pkg="rosserial_python" type="message_info_service.py"         />
+  
   <arg name="P0" default="ACM0"/>
   <arg name="P1" default="ACM1"/>
   <arg name="P2" default="ACM2"/>
