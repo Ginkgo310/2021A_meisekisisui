@@ -1,3 +1,3 @@
 float32 x_distance
 float32 y_distance
-float32 z_distance
+int16   captured
