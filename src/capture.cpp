@@ -33,17 +33,18 @@ int main(int argc, char **argv) try
 	ros::init(argc, argv, "realsense_info");
 	ros::NodeHandle nh;
 
-	ros::Publisher marker0_pub = nh.advertise<meisekisisui::realsenseInfo>("marker0", 1000);
-	ros::Publisher marker1_pub = nh.advertise<meisekisisui::realsenseInfo>("marker1", 1000);
-	ros::Publisher marker2_pub = nh.advertise<meisekisisui::realsenseInfo>("marker2", 1000);
+	ros::Publisher marker_pub = nh.advertise<meisekisisui::realsenseInfo>("marker", 1000);
 	ros::Rate loop_rate(100);
 
 	ROS_INFO("Started control station");
 
-	meisekisisui::realsenseInfo marker0;
-	meisekisisui::realsenseInfo marker1;
-	meisekisisui::realsenseInfo marker2;
-	
+	meisekisisui::realsenseInfo marker;
+
+	marker.x_distance.resize(Nummarkers);
+	marker.y_distance.resize(Nummarkers);
+	marker.depth.resize(Nummarkers);
+	marker.captured.resize(Nummarkers);	
+
 	//rs2::colorizer cr;
 
 	rs2::colorizer color_map;
@@ -81,9 +82,9 @@ int main(int argc, char **argv) try
 		cv::aruco::detectMarkers(detect, dictionary, marker_corners, marker_ids,  parameters);
 		cv::aruco::drawDetectedMarkers(detect, marker_corners, marker_ids);
 	
-		marker0.captured = 0;
-		marker1.captured = 0;
-		marker2.captured = 0;
+		for(int i = 0; i < Nummarkers; ++i){
+			marker.captured[i] = 0;
+		}
 	
 		if(marker_ids.size() > 0) {
 			for(int i = 0; i < marker_ids.size() ;i++) {
@@ -96,26 +97,13 @@ int main(int argc, char **argv) try
 				}
 				marker_x /= 4;
 				marker_y /= 4;
+				double marker_depth = dep.get_distance(marker_x, marker_y)*100;
 				cv::circle(detect, cv::Point(marker_x, marker_y), 5, cv::Scalar(0, 200, 0), -1, -1);
-				switch(marker_ids.at(i)){
-					case 0:
-						marker0.x_distance = marker_x;
-						marker0.y_distance = marker_y;
-						marker0.captured   = 1;
-						break;
-					case 1:
-						marker1.x_distance = marker_x;
-						marker1.y_distance = marker_y;
-						marker1.captured   = 1;
-						break;
-					case 2:
-						marker2.x_distance = marker_x;
-						marker2.y_distance = marker_y;
-						marker2.captured   = 1;
-						break;
-				}		
+				marker.x_distance[marker_ids.at(i)] = marker_x;
+				marker.y_distance[marker_ids.at(i)] = marker_y;
+				marker.depth[marker_ids.at(i)] = marker_depth;
+				marker.captured[marker_ids.at(i)] = 1;
 			}
-			double marker_depth = dep.get_distance(marker_x, marker_y);
 		}
 		cv::circle(detect, cv::Point(marker_x, marker_y), 5, cv::Scalar(155, 200, 0), -1, -1);
 
@@ -168,11 +156,9 @@ int main(int argc, char **argv) try
 		cv::imshow("detecter", detect);
 		cv::imshow("labeling", label);
 
-		marker0_pub.publish(marker0);
-		marker1_pub.publish(marker1);
-		marker2_pub.publish(marker2);	
+		marker_pub.publish(marker);
 
-		ROS_INFO("0x:%f 0y:%f 0c: %d 1x:%f 1y:%f 1c: %d 2x:%f 2y:%f 2c: %d",marker0.x_distance,marker0.y_distance,marker0.captured,marker1.x_distance,marker1.y_distance,marker1.captured,marker2.x_distance,marker2.y_distance,marker2.captured);
+		ROS_INFO("0x:%f 0y:%f 0z:%f 0c: %d",marker.x_distance[0],marker.y_distance[0],marker.depth[0],marker.captured[0]);
 
 		if(cv::waitKey(1) == 'q') {
 			cout << "finish!!" << endl;

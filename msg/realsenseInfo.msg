@@ -1,3 +1,4 @@
-float32 x_distance
-float32 y_distance
-int16   captured
+float32[] x_distance
+float32[] y_distance
+float32[] depth
+int16[]   captured
