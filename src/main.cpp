@@ -49,6 +49,8 @@ float y_dist[3];
 float depth[3];
 int check[3];
 
+int read_key = 0;
+
 float lidar_info[2];
 
 bool arart = false;
@@ -177,14 +179,23 @@ int main(int argc, char** argv)
 	error_data.data.resize(3);
 	shoot_recogniser.data.resize(2);
 
+	resetter.data = 0;
+	reset_pub.publish(resetter);
+
 	while(ros::ok()){
 		switch(move_phase){
 			case 0:
-				resetter.data = 1;
-				reset_pub.publish(resetter);
 				under_carryer.data[Go_addmission] = 0;
 				under_pub.publish(under_carryer);
-				std::cin >> move_phase;
+				std::cin >> read_key;
+				if(read_key >= 101){
+					resetter.data = read_key;
+					reset_pub.publish(resetter);
+				}else{
+					resetter.data = 10;
+					reset_pub.publish(resetter);
+					move_phase = read_key;
+				}
 				break;
 			case 7:
 				yumiya_phase.data = 3;
@@ -342,7 +353,7 @@ int main(int argc, char** argv)
 				catcher = false;
 				break;
 			case 26:
-				underdataSet(400,30,-180,27,3);
+				underdataSet(400,30,-180,27,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				break;
@@ -439,7 +450,7 @@ int main(int argc, char** argv)
 				move_phase = 41;
 				break;
 			case 41:
-				if(lidar_info[Y_INFO] <= 357 && lidar_info[Y_INFO] >= 355 && catcher == false){
+				if(lidar_info[Y_INFO] <= 362 && lidar_info[Y_INFO] >= 360 && catcher == false){
 					catcher = true;
 					counter = 0;
 					saveman_a[0] = lidar_info[Y_INFO];
@@ -464,7 +475,7 @@ int main(int argc, char** argv)
 				}
 				break;
 			case 42:
-				if(lidar_info[Y_INFO] >= 162 && lidar_info[Y_INFO] <= 164 && catcher == false){
+				if(lidar_info[Y_INFO] >= 167 && lidar_info[Y_INFO] <= 169 && catcher == false){
 					catcher = true;
 					counter = 0;
 					saveman_b[0] = lidar_info[Y_INFO];
@@ -513,8 +524,8 @@ int main(int argc, char** argv)
 				under_pub.publish(under_carryer);
 				break;
 			case 46:
-				tar_error_y = (20 - lidar_info[X_INFO]);
-				underdataSet(saver[0]-400,status[Y_POS] + tar_error_y,0,47,2);
+				tar_error_y = (40 - lidar_info[X_INFO]);
+				underdataSet(saver[0]-370,status[Y_POS] + tar_error_y,0,47,2);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				break;
@@ -534,23 +545,20 @@ int main(int argc, char** argv)
 			case 51:
 				errordataSet(5.0,5.0,0.01,1);
 				error_pub.publish(error_data);
-				maximdataSet(120,600,600,150);
+				maximdataSet(240,1200,1200,150);
 				max_pub.publish(max_data);
-				ROS_INFO("good night!");
-				//usleep(3000000);
-				ROS_INFO("ohayou");
 				yumiya_phase.data = 1;
 				yumi_addmission.publish(yumiya_phase);
 				underdataSet(420,420,0,0,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				catcher = false;
-				sleep(3);
+				usleep(100000);
 				move_phase = 52;
 				counter = 0;
 				break;
 			case 52:
-				if(status[X_POS] >= 204 && status[X_POS] <= 208){
+				if(status[X_POS] >= 200 && status[X_POS] <= 204){
 					if(status[Y_POS] >= 204 && status[Y_POS] <= 208){
 						if(status[THETA] >= -0.79 && status[THETA] <= -0.78)
 						{	
@@ -559,8 +567,8 @@ int main(int argc, char** argv)
 					}
 				}
 
-				if(status[X_POS] >= 300){
-                                        if(status[Y_POS] >= 300){
+				if(status[X_POS] >= 210){
+                                        if(status[Y_POS] >= 210){
                                                         catcher = true;
                                                 
                                         }
@@ -582,7 +590,6 @@ int main(int argc, char** argv)
 				ROS_INFO("SHOOOOT! at x:%lf y:%lf theta:%lf",saveman_a[0],saveman_a[1],saveman_b[0]);
 				//yumiya_phase.data = 1;
 				//yumi_addmission.publish(yumiya_phase);
-				move_phase = 0;
 				break;
 		}
 		ROS_INFO("phase:%d x_position:%5.2f y_position:%5.2f theta:%5.5f depth:%5.2f lidar_x:%5.2f lidar_y:%5.2f vvvv%d counter%ld",move_phase,status[X_POS],status[Y_POS],status[THETA],depth[0],lidar_info[X_INFO],lidar_info[Y_INFO],catcher,counter);
