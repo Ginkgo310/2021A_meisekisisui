@@ -38,7 +38,7 @@ int cmd_num = 0;
 int addmitter = 0;
 long int counter = 0;
 
-float x_tar_sense = 300;
+float x_tar_sense = 305;
 float y_tar_sense = 420;
 float tar_error_x;
 float tar_error_y;
@@ -62,6 +62,10 @@ bool catcher = false;
 float saver[2] = {0,0};
 
 int ppp[4] = {0,0,0,0};
+float adder = 0;
+bool check_the_target = false;
+
+float shoot_line = 0;
 
 std_msgs::Int16MultiArray max_data;
 
@@ -76,6 +80,8 @@ std_msgs::Float32MultiArray error_data;
 std_msgs::Int16 neck_pos;
 
 std_msgs::Int16 resetter;
+
+std_msgs::Int16 spec_Add;
 
 void getMarker(const meisekisisui::realsenseInfo& marker){
 	x_dist[0] = marker.x_distance[0];
@@ -166,6 +172,7 @@ int main(int argc, char** argv)
 	ros::Publisher target_recog    = nh.advertise<std_msgs::Int16MultiArray>("tar_recog",10);
 	ros::Publisher neck_pub        = nh.advertise<std_msgs::Int16>("necker",10);
 	ros::Publisher reset_pub       = nh.advertise<std_msgs::Int16>("reset",10);
+	ros::Publisher spadd_pub       = nh.advertise<std_msgs::Int16>("special_add",10);
 
 	ros::Subscriber run_check      = nh.subscribe("check"   ,10,getcheck);
 	ros::Subscriber status_sub     = nh.subscribe("statuses",10,getStatus);
@@ -179,6 +186,8 @@ int main(int argc, char** argv)
 	error_data.data.resize(3);
 	shoot_recogniser.data.resize(2);
 
+	spec_Add.data = 0;
+	spadd_pub.publish(spec_Add);
 	resetter.data = 0;
 	reset_pub.publish(resetter);
 
@@ -211,94 +220,6 @@ int main(int argc, char** argv)
 				}
 
 				break;
-			case 8:
-				underdataSet(60,450,0,9,2);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				break;
-			case 9:
-				std::cin >> move_phase;
-				break;
-			case 10:
-				yumiya_phase.data = 1;
-				//yumi_pub.publish(yumiya_phase);
-				underdataSet(20,20,0,14,2);
-				maximdataSet(100,500,500,150);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				//move_phase = 11;
-				break;
-			case 11:
-				shoot_recogniser.data[0] = 0;
-				shoot_recogniser.data[1] = 2;
-				//target_recog.publish(shoot_recogniser);
-				yumiya_phase.data = 3;
-				//yumi_pub.publish(yumiya_phase);
-				if(shoot_buffer == 2){
-					if(counter < 100){
-						++counter;
-						yumiya_phase.data = 1;
-					}else{
-						counter = 0;
-						move_phase = 12;
-					}
-				}
-				break;
-			case 12:
-				shoot_recogniser.data[0] = 1;
-				shoot_recogniser.data[1] = 3;
-				//target_recog.publish(shoot_recogniser);
-				yumiya_phase.data = 3;
-				//yumi_pub.publish(yumiya_phase);
-				if(shoot_buffer == 3){
-					if(counter < 100){
-						++counter;
-						yumiya_phase.data = 1;
-					}else{
-						counter = 0;
-						move_phase = 13;
-					}
-				}	
-				break;
-			case 13:
-				shoot_recogniser.data[0] = 2;
-				shoot_recogniser.data[1] = 4;
-				//target_recog.publish(shoot_recogniser);
-				yumiya_phase.data = 3;
-				//yumi_pub.publish(yumiya_phase);
-				//if(shoot_buffer == 4){
-				//}
-				break;
-			case 14:
-				std::cin >> move_phase;
-				break;
-			case 15:
-				yumiya_phase.data = 1;
-				underdataSet(20,120,0,16,2);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				break;
-			case 16:
-				underdataSet(20,120,-45,17,2);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				break;
-			case 17:
-				if(counter < 5000){
-					counter++;
-				}else{
-					counter = 0;
-					move_phase = 18;
-				}
-
-				break;
-			case 18:
-				yumiya_phase.data = 3;
-				underdataSet(370,470,0,0,2);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				break;
-
 			case 20:
 				neck_pos.data = 1;
 				neck_pub.publish(neck_pos);
@@ -432,7 +353,6 @@ int main(int argc, char** argv)
 				under_carryer.data[Go_addmission] = 0;
 				under_pub.publish(under_carryer);
 				break;
-
 			case 40:
 				neck_pos.data = 1;
 				neck_pub.publish(neck_pos);
@@ -450,7 +370,7 @@ int main(int argc, char** argv)
 				move_phase = 41;
 				break;
 			case 41:
-				if(lidar_info[Y_INFO] <= 362 && lidar_info[Y_INFO] >= 360 && catcher == false){
+				if(lidar_info[Y_INFO] <= 358 && lidar_info[Y_INFO] >= 352 && catcher == false){
 					catcher = true;
 					counter = 0;
 					saveman_a[0] = lidar_info[Y_INFO];
@@ -473,9 +393,16 @@ int main(int argc, char** argv)
 						move_phase = 42;
 					}
 				}
+
+				if(lidar_info[Y_INFO] <= 300){
+					counter = 0;
+					catcher = false;
+					move_phase = 42;
+
+				}
 				break;
 			case 42:
-				if(lidar_info[Y_INFO] >= 167 && lidar_info[Y_INFO] <= 169 && catcher == false){
+				if(lidar_info[Y_INFO] >= 148 && lidar_info[Y_INFO] <= 154 && catcher == false){
 					catcher = true;
 					counter = 0;
 					saveman_b[0] = lidar_info[Y_INFO];
@@ -533,33 +460,42 @@ int main(int argc, char** argv)
 				ROS_INFO("first lidar:%lf theta:%lf second lidar:%lf theta:%lf",saveman_a[0],saveman_a[1],saveman_b[0],saveman_b[1]);
 				move_phase = 0;
 				break;
-
 			case 50:
 				counter = 0;
 				errordataSet(1.0,1.0,0.01,40);
 				error_pub.publish(error_data);
-				underdataSet(0,0,-45,51,0);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
+				catcher = false;
+				move_phase = 51;
 				break;
 			case 51:
-				errordataSet(5.0,5.0,0.01,1);
-				error_pub.publish(error_data);
-				maximdataSet(240,1200,1200,150);
-				max_pub.publish(max_data);
-				yumiya_phase.data = 1;
-				yumi_addmission.publish(yumiya_phase);
+				if(counter < 1000){
+					errordataSet(5.0,5.0,0.01,1);
+					error_pub.publish(error_data);
+					maximdataSet(240,1200,1200,150);
+					max_pub.publish(max_data);
+					if(catcher == false){
+						underdataSet(0,0,-45,52,0);
+						arartCheck(1);
+						under_pub.publish(under_carryer);
+						catcher = true;
+					}
+					++counter;
+				}else{
+					yumiya_phase.data = 1;
+					yumi_addmission.publish(yumiya_phase);
+					catcher = false;
+					counter = 0;
+				}
+				break;
+			case 52:
 				underdataSet(420,420,0,0,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
-				catcher = false;
-				usleep(100000);
-				move_phase = 52;
-				counter = 0;
+				move_phase = 53;
 				break;
-			case 52:
+			case 53:
 				if(status[X_POS] >= 200 && status[X_POS] <= 204){
-					if(status[Y_POS] >= 204 && status[Y_POS] <= 208){
+					if(status[Y_POS] >= 200 && status[Y_POS] <= 204){
 						if(status[THETA] >= -0.79 && status[THETA] <= -0.78)
 						{	
 							catcher = true;
@@ -568,11 +504,11 @@ int main(int argc, char** argv)
 				}
 
 				if(status[X_POS] >= 210){
-                                        if(status[Y_POS] >= 210){
-                                                        catcher = true;
-                                                
-                                        }
-                                }
+					if(status[Y_POS] >= 210){
+						catcher = true;
+
+					}
+				}
 
 				if(catcher == true){
 					yumiya_phase.data = 3;
@@ -580,19 +516,173 @@ int main(int argc, char** argv)
 					saveman_a[0] = status[X_POS];
 					saveman_a[1] = status[Y_POS];
 					saveman_b[0] = status[THETA];	
-					move_phase = 53;
+					move_phase = 54;
 				}else{
 					yumiya_phase.data = 1;
 					yumi_addmission.publish(yumiya_phase);
 				}
 				break;
-			case 53:
+			case 54:
 				ROS_INFO("SHOOOOT! at x:%lf y:%lf theta:%lf",saveman_a[0],saveman_a[1],saveman_b[0]);
-				//yumiya_phase.data = 1;
-				//yumi_addmission.publish(yumiya_phase);
 				break;
+			case 60:
+				neck_pos.data = 1;
+				neck_pub.publish(neck_pos);
+				maximdataSet(75,375,375,150);
+				max_pub.publish(max_data);
+				yumiya_phase.data = 1;
+				yumi_addmission.publish(yumiya_phase);
+				underdataSet(0,420,0,63,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				errordataSet(5.0,5.0,0.01,1);
+				error_pub.publish(error_data);
+				catcher = false;
+				check_the_target = false;
+				move_phase = 61;
+				break;
+			case 61:
+				if(lidar_info[X_INFO] <= 380 && check_the_target == false){
+					adder = lidar_info[Y_INFO];
+					check_the_target = true;
+				}
+				if(lidar_info[Y_INFO] <= adder - 11 && lidar_info[Y_INFO] >= adder - 15 && catcher == false && check_the_target == true){
+					catcher = true;
+					counter = 0;
+					saveman_a[0] = lidar_info[Y_INFO];
+					saveman_a[1] = status[THETA];
+				}
+				if(catcher == true){
+					if(counter < 500){
+						yumiya_phase.data = 3;
+						yumi_addmission.publish(yumiya_phase);
+						++counter;
+					}else if(counter < 700){
+						yumiya_phase.data = 1;
+						yumi_addmission.publish(yumiya_phase);
+						++counter;
+					}else{
+						yumiya_phase.data = 1;
+						yumi_addmission.publish(yumiya_phase);
+						counter = 0;
+						check_the_target = false;
+						catcher = false;
+						move_phase = 62;
+					}
+				}
+				break;
+			case 62:
+				if(lidar_info[X_INFO] <= 380 && check_the_target == false && lidar_info[Y_INFO] < 250){
+					adder = lidar_info[Y_INFO];
+					check_the_target = true;
+				}
+
+				if(lidar_info[Y_INFO] <= adder - 11 && lidar_info[Y_INFO] >= adder - 15 && catcher == false && check_the_target == true){
+					catcher = true;
+					counter = 0;
+					saveman_b[0] = lidar_info[Y_INFO];
+					saveman_b[1] = status[THETA];
+				}
+				if(catcher == true){
+					yumiya_phase.data = 3;
+					yumi_addmission.publish(yumiya_phase);
+					if(counter < 1000){
+						++counter;
+					}else{
+						counter = 0;
+						check_the_target = false;
+						catcher = false;
+						move_phase = 63;
+					}
+				}else{
+					yumiya_phase.data = 1;
+					yumi_addmission.publish(yumiya_phase);
+				} 
+				break;
+			case 63:
+				yumiya_phase.data = 3;
+				yumi_addmission.publish(yumiya_phase);
+				sleep(3);
+				if(catcher == false){
+					catcher = true;
+					saver[0] = status[X_POS];
+					saver[1] = status[Y_POS];
+				}
+				underdataSet(saver[0],saver[1],180,64,3);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				maximdataSet(200,1000,1000,150);
+				max_pub.publish(max_data);
+				break;
+			case 64:
+				underdataSet(saver[0],20,0,65,3);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				counter = 0;
+				catcher = false;
+				break;
+			case 65:
+				underdataSet(saver[0],20,-90,66,2);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				break;
+			case 66:
+				tar_error_y = (40 - lidar_info[X_INFO]);
+				underdataSet(saver[0]-370,status[Y_POS] + tar_error_y,0,67,2);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				break;
+			case 67:
+				ROS_INFO("first lidar:%lf theta:%lf second lidar:%lf theta:%lf",saveman_a[0],saveman_a[1],saveman_b[0],saveman_b[1]);
+				move_phase = 0;
+				break;
+			case 70:
+				counter = 0;
+				errordataSet(1.0,1.0,0.01,40);
+				error_pub.publish(error_data);
+				catcher = false;
+				move_phase = 71;
+				break;
+			case 71:
+				if(counter < 1000){
+					errordataSet(5.0,5.0,0.01,1);
+					error_pub.publish(error_data);
+					maximdataSet(240,1200,1200,150);
+					max_pub.publish(max_data);
+					if(catcher == false){
+						underdataSet(0,0,-45,72,0);
+						arartCheck(1);
+						under_pub.publish(under_carryer);
+						catcher = true;
+					}
+					++counter;
+				}else{
+					yumiya_phase.data = 1;
+					yumi_addmission.publish(yumiya_phase);
+					catcher = false;
+					counter = 0;
+					spec_Add.data = 1;
+					spadd_pub.publish(spec_Add);
+				}
+				break;
+			case 72:
+				underdataSet(420,420,0,0,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				move_phase = 73;
+				break;
+			case 73:
+				if(status[X_POS] >= 220){
+                                        if(status[Y_POS] >= 220){
+						yumiya_phase.data = 3;
+                                        	yumi_addmission.publish(yumiya_phase);
+						spec_Add.data = 0;
+                                        	spadd_pub.publish(spec_Add);
+                                        }
+                                }
+				break;		
 		}
-		ROS_INFO("phase:%d x_position:%5.2f y_position:%5.2f theta:%5.5f depth:%5.2f lidar_x:%5.2f lidar_y:%5.2f vvvv%d counter%ld",move_phase,status[X_POS],status[Y_POS],status[THETA],depth[0],lidar_info[X_INFO],lidar_info[Y_INFO],catcher,counter);
+		ROS_INFO("phase:%d x_position:%5.2f y_position:%5.2f theta:%5.5f depth:%5.2f lidar_x:%5.2f lidar_y:%5.2f vvvv%d counter%ld adder:%5.2f tof:%d",move_phase,status[X_POS],status[Y_POS],status[THETA],depth[0],lidar_info[X_INFO],lidar_info[Y_INFO],catcher,counter,adder,check_the_target);
 		ros::spinOnce();
 		loop_rate.sleep();
 	}

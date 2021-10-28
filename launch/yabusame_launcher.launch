@@ -4,7 +4,6 @@
 
   <node name="supershooter"   pkg="meisekisisui"     type="supershooter"   output="screen"  />
 
-  <node name="realsense_info" pkg="meisekisisui"     type="realsense_info"                  />
 
   <node name="important"      pkg="rosserial_server" type="socket_node"                     />
 
