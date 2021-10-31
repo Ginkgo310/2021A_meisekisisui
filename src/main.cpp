@@ -29,6 +29,9 @@ const int NOW_VY = 4;
 const int X_INFO = 0;
 const int Y_INFO = 1;
 
+const int NOW  = 0;
+const int PREV = 1;
+
 int shoot_buffer = 0;
 
 float status[5];
@@ -38,7 +41,7 @@ int cmd_num = 0;
 int addmitter = 0;
 long int counter = 0;
 
-float x_tar_sense = 305;
+float x_tar_sense = 308;
 float y_tar_sense = 420;
 float tar_error_x;
 float tar_error_y;
@@ -54,6 +57,7 @@ int read_key = 0;
 float lidar_info[2];
 
 bool arart = false;
+int arart_status[2] = {1,1};
 
 float saveman_a[2];
 float saveman_b[2];
@@ -102,7 +106,7 @@ void getMarker(const meisekisisui::realsenseInfo& marker){
 
 void arartCheck(int n){
 	if(arart == 1){
-		under_carryer.data[Go_addmission] = n;
+		under_carryer.data[Go_addmission] = 0;
 	}else{
 		under_carryer.data[Go_addmission] = n;
 	}
@@ -146,10 +150,14 @@ void errordataSet(float x_error, float y_error, float theta_error, float k){
 
 void getArart(const std_msgs::Int16& pushed_msg){
 	arart = pushed_msg.data;
-	//if(arart == 1){
-	//	move_phase == 0;
-	//}
-	//ROS_INFO("%d",arart);
+	arart_status[NOW] = arart;
+	if(arart_status[NOW] != arart_status[PREV]){
+		if(arart_status[NOW] == 1){
+			ROS_INFO("robot has been rocked by remote emargency");
+		}else{
+			ROS_INFO("robot is now avairable");
+		}
+	}
 }
 
 void getLidar(const std_msgs::Int32MultiArray& lidar_lidar){
@@ -208,9 +216,13 @@ int main(int argc, char** argv)
 					resetter.data = read_key;
 					reset_pub.publish(resetter);
 				}else{
-					resetter.data = 10;
-					reset_pub.publish(resetter);
-					move_phase = read_key;
+					if(arart == 1){
+						ROS_INFO("remote emargency switch online");
+					}else{
+						resetter.data = 10;
+						reset_pub.publish(resetter);
+						move_phase = read_key;
+					}
 				}
 				break;
 			case 7:
@@ -255,7 +267,7 @@ int main(int argc, char** argv)
 				yumi_addmission.publish(yumiya_phase);
 				tar_error_y = (x_tar_sense - lidar_info[Y_INFO]);
 				underdataSet(400,status[Y_POS] - tar_error_y,0,7,0);	
-				errordataSet(1.0,1.0,0.01,40);
+				errordataSet(1.0,1.0,0.005,40);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				error_pub.publish(error_data);
