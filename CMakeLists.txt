@@ -142,7 +142,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 ## add_executable(${PROJECT_NAME}_node src/2021_meisekisisui_node.cpp)
  add_executable(main_com src/main.cpp)
- add_executable(supershooter src/supershooter.cpp)
+ add_executable(tusin_check src/tusincheck.cpp)
  add_executable(realsense_info src/capture.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,7 +154,7 @@ include_directories(
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(main_com       ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(supershooter   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(tusin_check   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(realsense_info ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
@@ -162,7 +162,7 @@ add_dependencies(realsense_info ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXP
    ${catkin_LIBRARIES}
  )
 
- target_link_libraries(supershooter
+ target_link_libraries(tusin_check
    ${catkin_LIBRARIES}
  )
 
