@@ -65,6 +65,7 @@ float tar_error_x;
 float tar_error_y;
 
 int read_key = 0;
+char read_ch[5];
 
 float lidar_info[2];
 
@@ -204,7 +205,8 @@ void shoot_safety(int phase){
 
 void read_thread(){
 	while(true){
-		std::cin >> read_key;
+		std::cin >> read_ch;
+		read_key = atoi(read_ch);
 		if(read_key >= 101){
 			resetter.data = read_key;
 			ROS_INFO("phase:%d x_position:%5.2f y_position:%5.2f theta:%5.5f shoot_phase:%d lidar_x:%5.2f lidar_y:%5.2f vvvv%d counter%ld adder:%5.2f tof:%d",move_phase,status[X_POS],status[Y_POS],status[THETA],shoot_phase,lidar_info[X_INFO],lidar_info[Y_INFO],arart,counter,adder,check_the_target);
@@ -533,6 +535,297 @@ int main(int argc, char** argv)
 					}
 				}
 				break;*/	
+			case 10:
+				lidar_distance.data = lidar_dist;
+				lidar_dist_pub.publish(lidar_distance);
+				supershooter.data = supershoot;
+				naname_tar_pub.publish(supershooter);
+				lidar_sarvo.data = 50;
+				lidsarv_pub.publish(lidar_sarvo);
+				maximdataSet(240,1200,1200,170);
+				max_pub.publish(max_data);
+				neck_pos.data = 1;
+				neck_pub.publish(neck_pos);
+				underdataSet(40,600,0,11,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				break;
+			case 11:
+				counter = 0;
+				errordataSet(3.0,3.0,0.01,40);
+				error_pub.publish(error_data);
+				catcher = false;
+				move_phase = 12;
+				break;
+			case 12:
+				lidar_sarvo.data = 50;
+				lidsarv_pub.publish(lidar_sarvo);	
+				errordataSet(1.0,1.0,0.01,40);
+				error_pub.publish(error_data);
+				maximdataSet(180,1000,1000,170);
+				max_pub.publish(max_data);
+				underdataSet(40,600,-135,13,6);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				//shoot_safety(1);
+				//yumi_addmission.publish(yumiya_phase);
+				spec_Add.data = 1;
+				spadd_pub.publish(spec_Add);
+				break;
+			case 13:
+				maximdataSet(240,1200,1200,170);
+				max_pub.publish(max_data);
+				arartCheck(0);
+				spec_Add.data = 1;
+				spadd_pub.publish(spec_Add);
+				if(shoot_phase != 2){
+					//yumiya_phase.data = 1;
+					shoot_safety(1);
+					yumi_addmission.publish(yumiya_phase);
+				}else{
+					move_phase = 14;
+				}
+				break;
+			case 14:
+				maximdataSet(240,1200,1200,170);
+				max_pub.publish(max_data);
+				underdataSet(600,40,-135,15,6);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				//move_phase = 45;
+				break;
+			case 15:
+				/*if(status[X_POS] >= 400){
+				  if(status[Y_POS] <= 400){
+				  if(shoot_phase == 2){
+				//yumiya_phase.data = 3;
+				shoot_safety(3);
+				yumi_addmission.publish(yumiya_phase);
+				spec_Add.data = 0;
+				spadd_pub.publish(spec_Add);
+				ROS_INFO("untititititititititi");
+				success_flag = false;
+				}else{
+				success_flag = true;
+				}
+				}
+				}*/
+				                                errordataSet(3.0,3.0,0.03,20);
+                                error_pub.publish(error_data);
+                                        underdataSet(600,40,-90,16,6);
+                                        arartCheck(1);
+                                        under_pub.publish(under_carryer);
+				                                        spec_Add.data = 0;
+                                        spadd_pub.publish(spec_Add);
+					break;		
+			case 16:
+				if(shoot_phase == 2){
+					shoot_safety(3);
+					yumi_addmission.publish(yumiya_phase);
+					spec_Add.data = 0;
+					spadd_pub.publish(spec_Add);
+				}else{
+					move_phase = 17;
+				}
+				break;
+			case 17:
+				spec_Add.data = 0;
+				spadd_pub.publish(spec_Add);
+				maximdataSet(240,1200,1200,170);
+				max_pub.publish(max_data);
+				underdataSet(40,40,-90,18,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				break;
+			case 18:
+				underdataSet(40,40,0,0,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				ROS_INFO("%d",success_flag);
+				break;
+			case 20:
+				                                neck_pos.data = 1;
+                                neck_pub.publish(neck_pos);
+				lidar_sarvo.data = 60;
+				lidsarv_pub.publish(lidar_sarvo);
+				underdataSet(20,30,0,21,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				errordataSet(3.0,3.0,0.01,10);
+				error_pub.publish(error_data);
+				errordataSet(1.0,1.0,0.01,20);
+                                error_pub.publish(error_data);
+                                catcher = false;
+                                check_the_target = false;
+				break;
+			case 21:
+				shoot_safety(1);
+				yumi_addmission.publish(yumiya_phase);
+				maximdataSet(75,375,375,170);
+				max_pub.publish(max_data);
+				sleep(1);
+				target_distance = lidar_info[X_INFO] - 50/*670*/;
+				underdataSet(620,30,0,26,0);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				//yumiya_phase.data = 1;
+				//shoot_safety(1);
+				//yumi_addmission.publish(yumiya_phase);
+				errordataSet(5.0,5.0,0.01,1);
+				error_pub.publish(error_data);
+				move_phase = 23;
+				break;
+			case 22:
+				if(lidar_info[X_INFO] <= target_distance && check_the_target == false){
+					adder = lidar_info[Y_INFO];
+					check_the_target = true;
+				}
+				if(lidar_info[Y_INFO] <= adder -  min_er && (status[THETA] > (-0.5*M_PI/180) && status[THETA] < (0.5*M_PI/180))/*&& lidar_info[Y_INFO] >= adder - max_er*/ && catcher == false && check_the_target == true){
+					catcher = true;
+					counter = 0;
+					saveman_a[0] = status[Y_POS];
+					saveman_a[1] = status[THETA];
+				}
+				if(catcher == true){
+					if(counter < 500){
+						//yumiya_phase.data = 3;
+						shoot_safety(3);
+						yumi_addmission.publish(yumiya_phase);
+						++counter;
+					}else if(counter < 700){
+						//yumiya_phase.data = 1;
+						shoot_safety(1);
+						yumi_addmission.publish(yumiya_phase);
+						++counter;
+					}else{
+						//yumiya_phase.data = 1;
+						shoot_safety(1);
+						yumi_addmission.publish(yumiya_phase);
+						if(lidar_info[X_POS]  > target_distance + 40){
+							counter = 0;
+							check_the_target = false;
+							catcher = false;
+							move_phase = 23;
+						}
+					}
+				}
+				break;
+			case 23:
+				if(lidar_info[X_INFO] <= target_distance && check_the_target == false /*&& status[X_POS] < 400:260*/){
+					adder = lidar_info[Y_INFO];
+					check_the_target = true;
+				}
+				if(lidar_info[Y_INFO] <= adder - min_er&& (status[THETA] > (-0.5*M_PI/180) && status[THETA] < (0.5*M_PI/180)) /*&& lidar_info[Y_INFO] >= adder - max_er*/ && catcher == false && check_the_target == true){
+					catcher = true;
+					counter = 0;
+					saveman_a[0] = lidar_info[Y_INFO];
+					saveman_a[1] = status[THETA];
+				}
+				if(catcher == true){
+					if(counter < 500){
+						//yumiya_phase.data = 3;
+						shoot_safety(3);
+						yumi_addmission.publish(yumiya_phase);
+						++counter;
+					}else if(counter < 700){
+						//yumiya_phase.data = 1;
+						shoot_safety(1);
+						yumi_addmission.publish(yumiya_phase);
+						++counter;
+					}else{
+						//yumiya_phase.data = 1;
+						shoot_safety(1);
+						yumi_addmission.publish(yumiya_phase);
+						if(lidar_info[X_POS]  > target_distance + 40){
+							counter = 0;
+							check_the_target = false;
+							catcher = false;
+							move_phase = 24;
+						}
+					}
+				}else{
+					//yumiya_phase.data = 1;
+					shoot_safety(1);
+					yumi_addmission.publish(yumiya_phase);
+				}
+				break;
+
+			case 24:
+				if(lidar_info[X_INFO] <= target_distance && check_the_target == false /*&& status[X_POS] < 250:470*/){
+					adder = lidar_info[Y_INFO];
+					check_the_target = true;
+				}
+
+				if(lidar_info[Y_INFO] <= adder - min_er && (status[THETA] > (-0.5*M_PI/180) && status[THETA] < (0.5*M_PI/180)) /*&& lidar_info[Y_INFO] >= adder - max_er*/ && catcher == false && check_the_target == true){
+					catcher = true;
+					counter = 0;
+					saveman_b[0] = lidar_info[Y_INFO];
+					saveman_b[1] = status[THETA];
+				}
+				if(catcher == true){
+					//yumiya_phase.data = 3;
+					shoot_safety(3);
+					yumi_addmission.publish(yumiya_phase);
+					if(counter < 1000){
+						++counter;
+					}else{
+						/*counter = 0;
+						  check_the_target = false;
+						  catcher = false;*/
+						move_phase = 25;
+					}
+				}else{
+					//yumiya_phase.data = 1;
+					shoot_safety(1);
+					yumi_addmission.publish(yumiya_phase);
+				}
+				break;
+			case 25:
+				counter = 0;
+				check_the_target = false;
+				catcher = false;
+				//yumiya_phase.data = 3;
+				shoot_safety(3);
+				yumi_addmission.publish(yumiya_phase);
+				break;
+			case 26:
+				//yumiya_phase.data = 3;
+				if(shoot_phase == 2){
+					shoot_safety(3);
+					yumi_addmission.publish(yumiya_phase);
+					sleep(3);
+				}
+				if(catcher == false){
+					catcher = true;
+					saver[0] = status[X_POS];
+					saver[1] = status[Y_POS];
+				}
+				errordataSet(5.0,5.0,0.03,1);
+				error_pub.publish(error_data);
+				underdataSet(620,30,180,27,7);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				maximdataSet(200,1000,1000,170);
+				max_pub.publish(max_data);
+				break;
+			case 27:
+				tar_error_y = (40 - lidar_info[Y_INFO]);
+				underdataSet(40/* - lidar_info[X_INFO]+ status[Y_POS]*/,/*tar_error_y + status[X_POS]*/30,180,/*28*/0,7);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				counter = 0;
+				catcher = false;
+				break;
+			case 28:
+				if(catcher == false){
+					catcher = true;
+					saver[0] = status[X_POS];
+					saver[1] = status[Y_POS];
+				}
+				underdataSet(/*saver[0]*/30,/*saver[1]*/30,0,0,7);
+				arartCheck(1);
+				under_pub.publish(under_carryer);
+				break;
 			case 40:
 				lidar_distance.data = lidar_dist;
 				lidar_dist_pub.publish(lidar_distance);
