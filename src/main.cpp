@@ -285,14 +285,14 @@ int main(int argc, char** argv)
 
 	if(kind_of_arrow == tyujitu_ABS){
 		lidar_dist = 10;
-		supershoot = 107;
+		supershoot = 387;
 		lidar_angle = 60;
 	}else if(tyuku_ABS){
 		lidar_dist = 5;
-		supershoot = 55/*25*/;//<--大きければ大きいほど発射タイミングが早い
+		supershoot = 387/*25*/;//<--大きければ大きいほど発射タイミングが早い
 		lidar_angle = 54;
-		min_er = 76;
-		max_er = 80;
+		min_er = /*46*/0;
+		max_er = /*50*/4;
 	}
 
 	spec_Add.data = 0;
@@ -336,115 +336,63 @@ int main(int argc, char** argv)
 
 				break;
 			case 10:
+				errordataSet(3.0,3.0,0.01,40);
+                                error_pub.publish(error_data);
 				lidar_distance.data = lidar_dist;
 				lidar_dist_pub.publish(lidar_distance);
 				supershooter.data = supershoot;
 				naname_tar_pub.publish(supershooter);
 				lidar_sarvo.data = 50;
 				lidsarv_pub.publish(lidar_sarvo);
-				maximdataSet(240,1200,1200,170);
+				maximdataSet(200,1000,1000,170);
 				max_pub.publish(max_data);
 				neck_pos.data = 1;
 				neck_pub.publish(neck_pos);
-				underdataSet(40,600,0,11,0);
+				underdataSet(40,40,0,11,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				break;
 			case 11:
 				counter = 0;
-				errordataSet(3.0,3.0,0.01,40);
-				error_pub.publish(error_data);
 				catcher = false;
-				move_phase = 12;
+                                underdataSet(40,40,-45,12,0);
+                                arartCheck(1);
+                                under_pub.publish(under_carryer);
 				break;
 			case 12:
-				lidar_sarvo.data = 50;
-				lidsarv_pub.publish(lidar_sarvo);	
-				errordataSet(1.0,1.0,0.01,40);
-				error_pub.publish(error_data);
-				maximdataSet(180,1000,1000,170);
-				max_pub.publish(max_data);
-				underdataSet(40,600,-135,13,6);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				//shoot_safety(1);
-				//yumi_addmission.publish(yumiya_phase);
+				arartCheck(0);
+				shoot_safety(1);
+                                yumi_addmission.publish(yumiya_phase);
+                                sleep(2);
+                                move_phase = 13;
 				spec_Add.data = 1;
 				spadd_pub.publish(spec_Add);
 				break;
 			case 13:
 				maximdataSet(240,1200,1200,170);
 				max_pub.publish(max_data);
-				arartCheck(0);
+				underdataSet(420,420,-45,14,0);
+                                arartCheck(1);
+                                under_pub.publish(under_carryer);	
 				spec_Add.data = 1;
 				spadd_pub.publish(spec_Add);
-				//if(shoot_phase != 2){
-				//yumiya_phase.data = 1;
-				shoot_safety(1);
-				yumi_addmission.publish(yumiya_phase);
-				//}else{
-				sleep(2);
-				move_phase = 14;
-				//}
 				break;
 			case 14:
-				maximdataSet(240,1200,1200,170);
+				maximdataSet(200,1000,1000,170);
 				max_pub.publish(max_data);
-				underdataSet(600,40,-135,15,6);
+				underdataSet(420,420,0,15,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
-				//move_phase = 45;
 				break;
 			case 15:
-				/*if(status[X_POS] >= 400){
-				  if(status[Y_POS] <= 400){
-				  if(shoot_phase == 2){
-				//yumiya_phase.data = 3;
-				shoot_safety(3);
-				yumi_addmission.publish(yumiya_phase);
-				spec_Add.data = 0;
-				spadd_pub.publish(spec_Add);
-				ROS_INFO("untititititititititi");
-				success_flag = false;
-				}else{
-				success_flag = true;
-				}
-				}
-				}*/
 				errordataSet(3.0,3.0,0.03,20);
 				error_pub.publish(error_data);
-				underdataSet(600,40,-90,16,6);
+				underdataSet(420,20,0,0,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				spec_Add.data = 0;
 				spadd_pub.publish(spec_Add);
 				break;		
-			case 16:
-				//if(shoot_phase == 2){
-					shoot_safety(3);
-					yumi_addmission.publish(yumiya_phase);
-					spec_Add.data = 0;
-					spadd_pub.publish(spec_Add);
-					sleep(1);
-					//}else{
-					move_phase = 17;
-				//}
-				break;
-			case 17:
-				spec_Add.data = 0;
-				spadd_pub.publish(spec_Add);
-				maximdataSet(240,1200,1200,170);
-				max_pub.publish(max_data);
-				underdataSet(40,40,-90,18,0);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				break;
-			case 18:
-				underdataSet(40,40,0,0,0);
-				arartCheck(1);
-				under_pub.publish(under_carryer);
-				ROS_INFO("%d",success_flag);
-				break;
 			case 20:
 				neck_pos.data = 1;
 				neck_pub.publish(neck_pos);
@@ -455,8 +403,8 @@ int main(int argc, char** argv)
 				under_pub.publish(under_carryer);
 				errordataSet(3.0,3.0,0.01,10);
 				error_pub.publish(error_data);
-				errordataSet(1.0,1.0,0.01,20);
-				error_pub.publish(error_data);
+				//errordataSet(1.0,1.0,0.01,20);
+				//error_pub.publish(error_data);
 				catcher = false;
 				check_the_target = false;
 				break;
@@ -466,7 +414,7 @@ int main(int argc, char** argv)
 				maximdataSet(75,375,375,170);
 				max_pub.publish(max_data);
 				sleep(1);
-				target_distance = lidar_info[X_INFO] - 50/*670*/;
+				target_distance = lidar_info[X_INFO] - 110/*670*/;
 				underdataSet(-30,620,0,26,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
@@ -633,7 +581,7 @@ int main(int argc, char** argv)
 				lidsarv_pub.publish(lidar_sarvo);
 				neck_pos.data = 1;
 				neck_pub.publish(neck_pos);
-				underdataSet(-40,40,-1,32,0);
+				underdataSet(-40,40,0,32,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				errordataSet(3.0,3.0,0.01,10);
@@ -663,12 +611,12 @@ int main(int argc, char** argv)
 				errordataSet(1.0,1.0,0.01,20);
 				error_pub.publish(error_data);
 				catcher = false;
-				move_phase = 3;
-					break;
+				move_phase = 33;
+				break;
 			case 33:
 				//spec_Add.data = 2;
 				//spadd_pub.publish(spec_Add);
-				underdataSet(-40,620,-1,0,34);
+				underdataSet(-40,620,0,0,34);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				//yumiya_phase.data = 1;
@@ -1200,7 +1148,7 @@ int main(int argc, char** argv)
 			case 81:
 				maximdataSet(240,1200,1200,170);
 				max_pub.publish(max_data);
-				underdataSet(40,40,-91,82,0);
+				underdataSet(40,40,-90,82,0);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				errordataSet(1.0,1.0,0.01,20);
@@ -1219,7 +1167,7 @@ int main(int argc, char** argv)
 				//}
 				break;
 			case 83:
-				underdataSet(620,40,-91,0,84);
+				underdataSet(620,40,-90,0,84);
 				arartCheck(1);
 				under_pub.publish(under_carryer);
 				//yumiya_phase.data = 1;
